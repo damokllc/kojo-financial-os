@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       INSERT INTO "Debt" (id, "userId", creditor, type, "originalBalance", "currentBalance", apr, "minimumPayment", status, "dueDate", notes, "dataStatus", "createdAt", "updatedAt")
       VALUES (${id}, ${userId}, ${body.creditor}, ${body.type},
         ${body.originalBalance ?? body.currentBalance}, ${body.currentBalance},
-        ${body.apr ?? null}, ${body.minimumPayment ?? null}, ${body.status},
+        ${body.apr ?? 0}, ${body.minimumPayment ?? 0}, ${body.status},
         ${body.dueDate ?? null}, ${body.notes ?? null}, 'USER_PROVIDED', NOW(), NOW())
     `
     return NextResponse.json({ success: true, id })

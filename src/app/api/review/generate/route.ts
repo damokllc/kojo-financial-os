@@ -97,7 +97,7 @@ ${dataSnapshot}`
   // Save to Memory table with weekly key
   await sql`
     INSERT INTO "Memory" (id, "userId", category, key, value, confidence, "createdAt", "updatedAt")
-    VALUES (${crypto.randomUUID()}, ${userId}, 'WEEKLY_REVIEW', ${weekKey}, ${reviewText}, 'AI_GENERATED', NOW(), NOW())
+    VALUES (${crypto.randomUUID()}, ${userId}, ${'WEEKLY_REVIEW'}, ${weekKey}, ${reviewText}, 'AI_GENERATED', NOW(), NOW())
     ON CONFLICT ("userId", category, key)
     DO UPDATE SET value = ${reviewText}, "updatedAt" = NOW()
   `

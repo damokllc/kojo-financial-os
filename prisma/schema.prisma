@@ -96,6 +96,7 @@ model FinancialAccount {
   plaidAccId   String?
   dataStatus   DataStatus @default(UNKNOWN)
   lastVerified DateTime?
+  accountNumber String?  // masked last 4
   notes        String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -241,6 +242,12 @@ model Business {
   targetRevenue Decimal?  @db.Decimal(15,2)
   deadline     DateTime?
   ownerDependency Int    @default(10)  // 1=independent, 10=fully dependent
+  type         String?  // business category / vertical
+  country      String?  @default("US")
+  website      String?
+  dataStatus   String?  @default("USER_PROVIDED")
+  priority     String?  @default("P3")  // P0=critical to P4=parked
+  projectState String?  @default("ACTIVE")  // ACTIVE/QUEUED/PARKED/ABANDONED
   notes        String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -463,6 +470,7 @@ model OpenLoop {
   closedAt    DateTime?
   closedNote  String?
   source      String?   // conversation id that created it
+  category    String?   // optional grouping
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -476,7 +484,9 @@ enum Priority {
 
 enum TaskStatus {
   PENDING
+  OPEN
   IN_PROGRESS
+  WAITING
   DONE
   CANCELLED
 }
@@ -597,6 +607,7 @@ model Goal {
   targetDate  DateTime?
   currentAmount Decimal @default(0) @db.Decimal(15,2)
   status      String   @default("active")
+  priority    String   @default("MEDIUM")  // CRITICAL/HIGH/MEDIUM/LOW
   notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -622,7 +633,9 @@ model FinancialSnapshot {
   financialFreedomScore Int?
   creditHealthScore Int?
   dataQualityScore  Int?
+  snapshotDay      DateTime? @db.Date   // DATE for upsert dedup
   notes            String?
+  createdAt        DateTime @default(now())
 }
 
 // ─── AUDIT LOG ────────────────────────────────────────────────────────────────

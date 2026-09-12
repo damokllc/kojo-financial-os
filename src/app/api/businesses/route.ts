@@ -28,7 +28,6 @@ async function ensureBusinessMigration() {
 export async function GET() {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  await ensureBusinessMigration()
   try {
     const rows = await sql`SELECT * FROM "Business" WHERE "userId" = ${session.user.id} AND "isActive" = true ORDER BY grade ASC`
     return NextResponse.json({ businesses: rows })

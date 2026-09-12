@@ -143,10 +143,10 @@ async function saveData(userId: string, entity: string, data: Record<string, any
       const { title, category = 'OTHER', targetAmount, currentAmount = 0, targetDate, priority = 'MEDIUM', description } = data
       if (!title) return 'Error: goal requires title'
       await sql`
-        INSERT INTO "Goal" (id, "userId", title, notes, category, "targetAmount", "currentAmount", "targetDate", status, "createdAt", "updatedAt")
+        INSERT INTO "Goal" (id, "userId", title, notes, category, "targetAmount", "currentAmount", "targetDate", priority, status, "createdAt", "updatedAt")
         VALUES (${id}, ${userId}, ${title}, ${description ?? null}, ${category},
           ${targetAmount != null ? Number(targetAmount) : null}, ${Number(currentAmount)},
-          ${targetDate ? new Date(targetDate).toISOString() : null}, 'active', NOW(), NOW())
+          ${targetDate ? new Date(targetDate).toISOString() : null}, ${priority}, 'active', NOW(), NOW())
       `
       return `✅ Saved goal: "${title}" ${targetAmount ? `— Target: $${Number(targetAmount).toLocaleString()}` : ''} ${targetDate ? `| Due: ${new Date(targetDate).toLocaleDateString()}` : ''}`
     }
@@ -155,7 +155,7 @@ async function saveData(userId: string, entity: string, data: Record<string, any
       const { text, priority = 'MEDIUM', nextAction, dueDate, category } = data
       if (!text) return 'Error: loop requires text'
       await sql`
-        INSERT INTO "OpenLoop" (id, "userId", text, priority, "nextAction", "dueDate", source, status, "createdAt", "updatedAt")
+        INSERT INTO "OpenLoop" (id, "userId", text, priority, "nextAction", "dueDate", category, status, "createdAt", "updatedAt")
         VALUES (${id}, ${userId}, ${text}, ${priority}, ${nextAction ?? null},
           ${dueDate ? new Date(dueDate).toISOString() : null}, ${category ?? null}, 'PENDING', NOW(), NOW())
       `
