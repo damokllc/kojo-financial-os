@@ -9,8 +9,10 @@ const NAV = [
   { href: '/credit',      icon: '📈', label: 'Credit' },
   { href: '/businesses',  icon: '🏢', label: 'Businesses' },
   { href: '/documents',   icon: '📁', label: 'Documents' },
+  { href: '/goals',       icon: '🎯', label: 'Goals' },
   { href: '/loops',       icon: '🔁', label: 'Open Loops' },
   { href: '/journal',     icon: '📓', label: 'Journal' },
+  { href: '/review',      icon: '📋', label: 'Weekly Review' },
   { href: '/ai',          icon: '🤖', label: 'AI CFO' },
 ]
 

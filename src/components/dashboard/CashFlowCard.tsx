@@ -1,5 +1,5 @@
 import { auth } from '@/lib/auth'
-import { db } from '@/lib/db/client'
+import { sql } from '@/lib/db/neon'
 
 function fmt(n: number) {
   return n >= 0 ? `+$${n.toLocaleString()}` : `-$${Math.abs(n).toLocaleString()}`
@@ -10,15 +10,29 @@ export default async function CashFlowCard() {
   const userId = session!.user!.id!
 
   const now = new Date()
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
 
-  const txns = await db.transaction.findMany({
-    where: { userId, date: { gte: startOfMonth }, isExcluded: false },
-    select: { amount: true, type: true },
-  })
+  let income = 0
+  let expenses = 0
 
-  const income = txns.filter(t => t.type === 'INCOME').reduce((s, t) => s + t.amount, 0)
-  const expenses = txns.filter(t => t.type === 'EXPENSE').reduce((s, t) => s + t.amount, 0)
+  try {
+    // positive amount = income/credit, negative = expense/debit (per schema)
+    const rows = await sql`
+      SELECT
+        COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) AS income,
+        COALESCE(SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END), 0) AS expenses
+      FROM "Transaction"
+      WHERE "userId" = ${userId}
+        AND date >= ${startOfMonth}
+    `
+    if (rows[0]) {
+      income = Number(rows[0].income)
+      expenses = Number(rows[0].expenses)
+    }
+  } catch {
+    // DB unavailable — show zeros gracefully
+  }
+
   const net = income - expenses
 
   return (

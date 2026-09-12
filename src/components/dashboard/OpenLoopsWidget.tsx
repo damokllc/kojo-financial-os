@@ -23,7 +23,7 @@ export default function OpenLoopsWidget({ loops }: { loops: OpenLoop[] }) {
       ) : (
         <ul className="space-y-3">
           {loops.map(loop => {
-            const overdue = loop.deadline && new Date(loop.deadline) < new Date()
+            const overdue = loop.dueDate && new Date(loop.dueDate) < new Date()
             return (
               <li key={loop.id} className="flex items-start gap-3">
                 <div className="mt-0.5">
@@ -37,9 +37,9 @@ export default function OpenLoopsWidget({ loops }: { loops: OpenLoop[] }) {
                     <p className="text-xs text-slate-500 mt-0.5 truncate">→ {loop.nextAction}</p>
                   )}
                 </div>
-                {loop.deadline && (
+                {loop.dueDate && (
                   <span className={`text-xs flex-shrink-0 ${overdue ? 'text-red-400 font-semibold' : 'text-slate-500'}`}>
-                    {new Date(loop.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {new Date(loop.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </span>
                 )}
               </li>

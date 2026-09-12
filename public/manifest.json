@@ -1,0 +1,16 @@
+{
+  "name": "Kojo Financial OS",
+  "short_name": "FinancialOS",
+  "description": "Your AI-powered personal CFO and financial operating system",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#00e5b0",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

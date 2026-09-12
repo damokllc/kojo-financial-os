@@ -1,36 +1,23 @@
 'use client'
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useFormState, useFormStatus } from 'react-dom'
+import { authenticate } from './actions'
+
+function SignInButton() {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="btn-primary w-full text-center disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {pending ? 'Signing in…' : 'Sign In'}
+    </button>
+  )
+}
 
 export default function SignInPage() {
-  const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    })
-
-    setLoading(false)
-
-    if (result?.error) {
-      setError('Invalid email or password.')
-    } else {
-      router.push('/dashboard')
-      router.refresh()
-    }
-  }
+  const [errorMessage, dispatch] = useFormState(authenticate, undefined)
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-4">
@@ -44,18 +31,17 @@ export default function SignInPage() {
 
         {/* Card */}
         <div className="card">
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form action={dispatch} className="space-y-5">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1.5">
                 Email
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 autoComplete="email"
                 required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
                 className="w-full bg-[#111827] border border-[#2a3040] rounded-lg px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-[#00e5b0] focus:ring-1 focus:ring-[#00e5b0] transition-colors"
                 placeholder="kojo@example.com"
               />
@@ -67,29 +53,22 @@ export default function SignInPage() {
               </label>
               <input
                 id="password"
+                name="password"
                 type="password"
                 autoComplete="current-password"
                 required
-                value={password}
-                onChange={e => setPassword(e.target.value)}
                 className="w-full bg-[#111827] border border-[#2a3040] rounded-lg px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-[#00e5b0] focus:ring-1 focus:ring-[#00e5b0] transition-colors"
                 placeholder="••••••••"
               />
             </div>
 
-            {error && (
+            {errorMessage && (
               <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-lg px-4 py-3">
-                {error}
+                {errorMessage}
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full text-center disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Signing in…' : 'Sign In'}
-            </button>
+            <SignInButton />
           </form>
         </div>
 
