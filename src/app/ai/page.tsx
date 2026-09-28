@@ -1,8 +1,6 @@
 import { Metadata } from 'next'
 import AIChatClient from './AIChatClient'
-import dynamic from 'next/dynamic'
-
-const DeviceScanner = dynamic(() => import('@/components/axiom/DeviceScanner'), { ssr: false })
+import DeviceScanner from '@/components/axiom/DeviceScannerLazy'
 import { auth } from '@/lib/auth'
 import { sql } from '@/lib/db/neon'
 
@@ -11,8 +9,9 @@ export const metadata: Metadata = { title: 'AI CFO' }
 export default async function AIPage({
   searchParams,
 }: {
-  searchParams: { q?: string }
+  searchParams: Promise<{ q?: string }>
 }) {
+  const { q } = await searchParams
   const session = await auth()
   const userId = session!.user!.id!
 
@@ -76,7 +75,7 @@ export default async function AIPage({
       <AIChatClient
         conversationId={conversationId}
         initialMessages={initialMessages}
-        initialPrompt={searchParams.q}
+        initialPrompt={q}
       />
     </div>
   )
