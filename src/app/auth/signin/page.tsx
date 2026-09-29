@@ -1,7 +1,20 @@
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import Link from 'next/link'
+import { Suspense, useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
+import { useSearchParams } from 'next/navigation'
 import { authenticate } from './actions'
+
+function ResetNotice() {
+  const params = useSearchParams()
+  if (params.get('reset') !== '1') return null
+  return (
+    <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm rounded-lg px-4 py-3 mb-5">
+      Password updated. Sign in with your new password.
+    </div>
+  )
+}
 
 function SignInButton() {
   const { pending } = useFormStatus()
@@ -17,7 +30,7 @@ function SignInButton() {
 }
 
 export default function SignInPage() {
-  const [errorMessage, dispatch] = useFormState(authenticate, undefined)
+  const [errorMessage, dispatch] = useActionState(authenticate, undefined)
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-4">
@@ -31,6 +44,9 @@ export default function SignInPage() {
 
         {/* Card */}
         <div className="card">
+          <Suspense fallback={null}>
+            <ResetNotice />
+          </Suspense>
           <form action={dispatch} className="space-y-5">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1.5">
@@ -48,9 +64,14 @@ export default function SignInPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1.5">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="password" className="block text-sm font-medium text-slate-300">
+                  Password
+                </label>
+                <Link href="/auth/forgot" className="text-xs text-[#00e5b0] hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 id="password"
                 name="password"

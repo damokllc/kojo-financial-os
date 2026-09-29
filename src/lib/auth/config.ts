@@ -66,7 +66,6 @@ export const authConfig: NextAuthConfig = {
         const { email, password } = parsed.data
 
         // Use neon HTTP client directly — avoids Prisma pg SCRAM auth issue
-        // Try live DB first; fall back to seeded user hash if credentials are stale
         let dbUser: { id: string; email: string; name: string | null; passwordHash: string } | undefined
         try {
           const rows = await sql`
@@ -80,14 +79,7 @@ export const authConfig: NextAuthConfig = {
           console.error('[auth] neon query error:', (err as Error).message)
         }
 
-        // Fallback: use the seeded bcrypt hash when DB is unreachable
-        const SEEDED_USER = {
-          id: 'user_kojo_001',
-          email: 'damokllc@gmail.com',
-          name: 'Kojo Oppon-Kusi',
-          passwordHash: '$2a$12$3k6bLjL5PGAYhhY1zmf7HuxV8fo.TFyugoWHxMnf9bHCGOFWy0Yfu',
-        }
-        const user = dbUser ?? (email.toLowerCase() === SEEDED_USER.email ? SEEDED_USER : undefined)
+        const user = dbUser
 
         if (!user || !user.passwordHash) return null
 
