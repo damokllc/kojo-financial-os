@@ -36,13 +36,14 @@ async function syncShopify(userId: string): Promise<SyncResult> {
 export async function runSync(userId: string): Promise<SyncResult[]> {
   await ensureMetricsTable()
   const results: SyncResult[] = []
-  for (const fn of [syncShopify]) {
+  const sources: [string, (u: string) => Promise<SyncResult>][] = [['shopify', syncShopify]]
+  for (const [name, fn] of sources) {
     try {
       results.push(await fn(userId))
     } catch (err) {
       const message = (err as Error).message
       console.error('[sync]', message)
-      results.push({ source: fn.name.replace(/^sync/, '').toLowerCase(), ok: false, error: message })
+      results.push({ source: name, ok: false, error: message })
     }
   }
   return results
