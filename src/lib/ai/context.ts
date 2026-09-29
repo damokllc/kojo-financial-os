@@ -1,4 +1,5 @@
 import { sql } from '@/lib/db/neon'
+import { getLatestMetrics } from '@/lib/integrations/metrics'
 
 async function safeQuery<T>(query: Promise<T[]>): Promise<T[]> {
   try { return await query } catch { return [] }
@@ -23,6 +24,21 @@ export async function getFinancialContext(userId: string): Promise<string> {
     safeQuery(sql`SELECT * FROM "FinancialSnapshot" WHERE "userId" = ${userId} ORDER BY "snapshotDate" DESC LIMIT 1`),
     safeQuery(sql`SELECT value FROM "Memory" WHERE "userId" = ${userId} AND category = 'PERSONAL' AND key = 'userWorld' LIMIT 1`),
   ])
+
+  const liveMetrics = await getLatestMetrics(userId)
+  const liveByBiz = new Map<string, typeof liveMetrics>()
+  for (const m of liveMetrics) (liveByBiz.get(m.businessName) ?? liveByBiz.set(m.businessName, []).get(m.businessName)!).push(m)
+  const liveText = liveByBiz.size
+    ? [...liveByBiz.entries()].map(([biz, ms]) => {
+        const get = (k: string) => ms.find(m => m.metric === k)
+        const rev = get('revenue_30d'), ord = get('orders_30d'), aov = get('aov_30d')
+        const meta = (rev ?? ord)?.meta ?? {}
+        const top = Array.isArray(meta.topProducts) && meta.topProducts.length
+          ? ` | Top: ${meta.topProducts.map((t: any) => `${t.title} ×${t.quantity}`).join(', ')}` : ''
+        const when = new Date((rev ?? ord ?? ms[0]).capturedAt).toLocaleDateString()
+        return `• ${biz} (${ms[0].source}, synced ${when}): last ${meta.windowDays ?? 30} days — ${ord?.value ?? 0} orders, $${(rev?.value ?? 0).toLocaleString()} revenue${aov ? `, avg order $${aov.value}` : ''}${meta.lastOrderAt ? `, last order ${new Date(meta.lastOrderAt).toLocaleDateString()}` : ', no orders yet'}${top} [VERIFIED]`
+      }).join('\n')
+    : 'No live integrations synced yet.'
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const profile = (profileRows[0] as any) ?? null
@@ -117,6 +133,9 @@ Grade D (speculative): ${gradeStr('D')}
 Grade E (distraction): ${gradeStr('E')}
 Grade F (pause): ${gradeStr('F')}
 Grade G (exit): ${gradeStr('G')}
+
+━━━ LIVE BUSINESS DATA (AUTO-SYNCED) ━━━
+${liveText}
 
 ━━━ OPEN LOOPS (TOP 10 BY PRIORITY) ━━━
 ${loopsText}
